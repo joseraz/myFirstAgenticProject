@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sleep 2:*)",
+      "Bash(tail:*)",
+      "Bash(sleep 15:*)"
+    ]
+  }
+}

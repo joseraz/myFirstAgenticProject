@@ -1,0 +1,28 @@
+{
+  "entries": {
+    "2026-02-24": {
+      "completed": false,
+      "phase1": {
+        "review_schedule": false,
+        "gratitude": false,
+        "clear_workspace": false,
+        "set_intentions": false,
+        "close_comms": false
+      },
+      "phase2": {
+        "dim_lights": false,
+        "comfortable_clothes": false,
+        "stretching": false,
+        "warm_shower": false,
+        "bedroom_prep": false
+      },
+      "phase3": {
+        "no_screens": false,
+        "deep_breathing": false,
+        "read_book": false,
+        "journal": false,
+        "muscle_relax": false
+      }
+    }
+  }
+}
