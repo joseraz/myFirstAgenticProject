@@ -30,6 +30,31 @@ export default function App() {
     fetchState();
   }, [fetchState]);
 
+  const handleRename = useCallback(async (phaseId, itemId, label) => {
+    try {
+      const res = await fetch(`${API}/rename-item`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phase_id: phaseId, item_id: itemId, label }),
+      });
+      if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+      setState(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          phases: prev.phases.map(p =>
+            p.id !== phaseId ? p : {
+              ...p,
+              items: p.items.map(i => i.id !== itemId ? i : { ...i, label }),
+            }
+          ),
+        };
+      });
+    } catch (err) {
+      fetchState();
+    }
+  }, [fetchState]);
+
   const handleToggle = useCallback(async (phaseId, itemId) => {
     try {
       const res = await fetch(`${API}/toggle`, {
@@ -119,6 +144,7 @@ export default function App() {
             phase={phase}
             entries={today[phase.id] || {}}
             onToggle={handleToggle}
+            onRename={handleRename}
           />
         ))}
       </div>

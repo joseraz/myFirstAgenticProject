@@ -1,6 +1,30 @@
 {
   "entries": {
     "2026-02-24": {
+      "completed": true,
+      "phase1": {
+        "review_schedule": false,
+        "gratitude": false,
+        "clear_workspace": false,
+        "set_intentions": false,
+        "close_comms": false
+      },
+      "phase2": {
+        "dim_lights": false,
+        "comfortable_clothes": false,
+        "stretching": false,
+        "warm_shower": false,
+        "bedroom_prep": false
+      },
+      "phase3": {
+        "no_screens": false,
+        "deep_breathing": false,
+        "read_book": false,
+        "journal": false,
+        "muscle_relax": false
+      }
+    },
+    "2026-02-25": {
       "completed": false,
       "phase1": {
         "review_schedule": false,
@@ -23,6 +47,27 @@
         "journal": false,
         "muscle_relax": false
       }
+    }
+  },
+  "labels": {
+    "phase1": {
+      "gratitude": "Tidy up flat",
+      "review_schedule": "Clear your workspace",
+      "clear_workspace": "Pack for tomorrow",
+      "set_intentions": "X",
+      "close_comms": "Y"
+    },
+    "phase3": {
+      "no_screens": "Drink calming tea",
+      "muscle_relax": "Stretch body and relax",
+      "read_book": "Brush teeth",
+      "journal": "Spray lavander on pillow",
+      "deep_breathing": "Write a journal entry"
+    },
+    "phase2": {
+      "dim_lights": "Wash face",
+      "comfortable_clothes": "Puth on pijamas",
+      "bedroom_prep": "Z"
     }
   }
 }

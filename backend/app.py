@@ -86,6 +86,19 @@ def save_data(data):
         json.dump(data, f, indent=2)
 
 
+def build_phases(data):
+    """Return PHASES with any user-customized labels applied."""
+    labels = data.get('labels', {})
+    result = []
+    for phase in PHASES:
+        items = []
+        for item in phase['items']:
+            custom = labels.get(phase['id'], {}).get(item['id'])
+            items.append({'id': item['id'], 'label': custom if custom else item['label']})
+        result.append({**phase, 'items': items})
+    return result
+
+
 def get_default_entry():
     entry = {'completed': False}
     for phase in PHASES:
@@ -139,7 +152,7 @@ def get_state():
 
     return jsonify({
         'today': data['entries'][today],
-        'phases': PHASES,
+        'phases': build_phases(data),
         'streak': streak,
         'fibonacci': FIBONACCI,
         'unlocked_achievements': unlocked,
@@ -182,6 +195,20 @@ def toggle_item():
         'next_milestone': next_milestone,
         'just_completed': just_completed,
     })
+
+
+@app.route('/api/rename-item', methods=['POST'])
+def rename_item():
+    req = request.json
+    phase_id = req['phase_id']
+    item_id = req['item_id']
+    label = req['label'].strip()
+
+    data = load_data()
+    data.setdefault('labels', {}).setdefault(phase_id, {})[item_id] = label
+    save_data(data)
+
+    return jsonify({'ok': True, 'phase_id': phase_id, 'item_id': item_id, 'label': label})
 
 
 @app.route('/api/reset-today', methods=['POST'])
