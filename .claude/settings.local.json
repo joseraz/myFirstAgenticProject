@@ -3,7 +3,27 @@
     "allow": [
       "Bash(sleep 2:*)",
       "Bash(tail:*)",
-      "Bash(sleep 15:*)"
+      "Bash(sleep 15:*)",
+      "Bash(./start.sh:*)",
+      "Bash(curl:*)",
+      "Bash(kill 63625:*)",
+      "WebSearch",
+      "mcp__figma__get_design_context",
+      "mcp__figma__get_metadata",
+      "mcp__figma__get_screenshot",
+      "mcp__figma__generate_figma_design",
+      "Bash(open:*)",
+      "Bash(claude mcp:*)",
+      "mcp__atlassian__getAccessibleAtlassianResources",
+      "mcp__atlassian__getVisibleJiraProjects",
+      "mcp__atlassian__searchJiraIssuesUsingJql",
+      "Bash(python3:*)",
+      "mcp__atlassian__getJiraIssue",
+      "mcp__atlassian__createJiraIssue",
+      "mcp__atlassian__search",
+      "mcp__atlassian__editJiraIssue",
+      "mcp__atlassian__addCommentToJiraIssue",
+      "mcp__atlassian__getJiraIssueTypeMetaWithFields"
     ]
   }
 }

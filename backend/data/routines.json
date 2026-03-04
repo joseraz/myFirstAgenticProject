@@ -25,7 +25,7 @@
       }
     },
     "2026-02-25": {
-      "completed": false,
+      "completed": true,
       "phase1": {
         "review_schedule": false,
         "gratitude": false,
@@ -47,6 +47,174 @@
         "journal": false,
         "muscle_relax": false
       }
+    },
+    "2026-02-26": {
+      "completed": true,
+      "phase1": {
+        "review_schedule": true,
+        "gratitude": true,
+        "clear_workspace": true,
+        "set_intentions": true,
+        "close_comms": false
+      },
+      "phase2": {
+        "dim_lights": true,
+        "comfortable_clothes": true,
+        "stretching": false,
+        "warm_shower": false,
+        "bedroom_prep": false
+      },
+      "phase3": {
+        "no_screens": true,
+        "deep_breathing": true,
+        "read_book": true,
+        "journal": true,
+        "muscle_relax": false
+      }
+    },
+    "2026-02-27": {
+      "completed": true,
+      "phase1": {
+        "review_schedule": false,
+        "gratitude": false,
+        "clear_workspace": false,
+        "set_intentions": false,
+        "close_comms": false
+      },
+      "phase2": {
+        "dim_lights": false,
+        "comfortable_clothes": false,
+        "stretching": false,
+        "warm_shower": false,
+        "bedroom_prep": false
+      },
+      "phase3": {
+        "no_screens": false,
+        "deep_breathing": false,
+        "read_book": false,
+        "journal": false,
+        "muscle_relax": false
+      }
+    },
+    "2026-02-28": {
+      "completed": true,
+      "phase1": {
+        "review_schedule": false,
+        "gratitude": false,
+        "clear_workspace": false,
+        "set_intentions": false,
+        "close_comms": false
+      },
+      "phase2": {
+        "dim_lights": false,
+        "comfortable_clothes": false,
+        "stretching": false,
+        "warm_shower": false,
+        "bedroom_prep": false
+      },
+      "phase3": {
+        "no_screens": false,
+        "deep_breathing": false,
+        "read_book": false,
+        "journal": false,
+        "muscle_relax": false
+      }
+    },
+    "2026-03-01": {
+      "completed": true,
+      "phase1": {
+        "review_schedule": true,
+        "gratitude": true,
+        "clear_workspace": true,
+        "set_intentions": true,
+        "close_comms": true
+      },
+      "phase2": {
+        "dim_lights": true,
+        "comfortable_clothes": true,
+        "stretching": true,
+        "warm_shower": true,
+        "bedroom_prep": true
+      },
+      "phase3": {
+        "no_screens": true,
+        "deep_breathing": true,
+        "read_book": true,
+        "journal": true,
+        "muscle_relax": true
+      }
+    },
+    "2026-03-02": {
+      "completed": true,
+      "phase1": {
+        "review_schedule": true,
+        "gratitude": true,
+        "clear_workspace": true,
+        "set_intentions": true,
+        "close_comms": true
+      },
+      "phase2": {
+        "dim_lights": true,
+        "comfortable_clothes": true,
+        "stretching": true,
+        "warm_shower": true,
+        "bedroom_prep": true
+      },
+      "phase3": {
+        "no_screens": true,
+        "deep_breathing": true,
+        "read_book": true,
+        "journal": true,
+        "muscle_relax": true
+      }
+    },
+    "2026-03-03": {
+      "completed": true,
+      "phase1": {
+        "review_schedule": true,
+        "gratitude": true,
+        "clear_workspace": true,
+        "set_intentions": true,
+        "close_comms": true
+      },
+      "phase2": {
+        "dim_lights": true,
+        "comfortable_clothes": true,
+        "stretching": true,
+        "warm_shower": true,
+        "bedroom_prep": true
+      },
+      "phase3": {
+        "no_screens": true,
+        "deep_breathing": true,
+        "read_book": true,
+        "journal": true,
+        "muscle_relax": true
+      }
+    },
+    "2026-03-04": {
+      "completed": true,
+      "phase1": {
+        "review_schedule": false,
+        "gratitude": false,
+        "clear_workspace": false,
+        "set_intentions": true,
+        "close_comms": true
+      },
+      "phase2": {
+        "dim_lights": false,
+        "comfortable_clothes": false,
+        "stretching": false,
+        "warm_shower": false,
+        "bedroom_prep": false
+      },
+      "phase3": {
+        "no_screens": false,
+        "deep_breathing": false,
+        "read_book": false,
+        "journal": false,
+        "muscle_relax": true
+      }
     }
   },
   "labels": {
@@ -54,20 +222,20 @@
       "gratitude": "Tidy up flat",
       "review_schedule": "Clear your workspace",
       "clear_workspace": "Pack for tomorrow",
-      "set_intentions": "X",
+      "set_intentions": "B",
       "close_comms": "Y"
     },
     "phase3": {
       "no_screens": "Drink calming tea",
-      "muscle_relax": "Stretch body and relax",
+      "muscle_relax": "Z",
       "read_book": "Brush teeth",
       "journal": "Spray lavander on pillow",
       "deep_breathing": "Write a journal entry"
     },
     "phase2": {
       "dim_lights": "Wash face",
-      "comfortable_clothes": "Puth on pijamas",
-      "bedroom_prep": "Z"
+      "comfortable_clothes": "Put on pijamas",
+      "bedroom_prep": "Retinol solution"
     }
   }
 }

@@ -103,7 +103,7 @@
 }
 
 .streak-block {
-  background: var(--yellow);
+  background: #9D18F5;
   border-bottom: var(--border);
   padding: 28px 24px;
 }
