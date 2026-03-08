@@ -1,28 +1,53 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-import json
 import os
-import redis
+from supabase import create_client
 from datetime import date, timedelta
 
 app = Flask(__name__)
 CORS(app)
 
-# ── Data layer (Vercel KV / Redis) ────────────────────────────────────────────
+# ── Data layer (Supabase) ─────────────────────────────────────────────────────
 
-_kv = redis.from_url(os.environ['KV_URL'])
-_KV_KEY = 'routines'
+_sb = create_client(os.environ['SUPABASE_URL'], os.environ['SUPABASE_KEY'])
 
 
 def load_data():
-    raw = _kv.get(_KV_KEY)
-    if raw:
-        return json.loads(raw)
-    return {'entries': {}, 'labels': {}}
+    entries_resp = _sb.table('routine_entries').select('*').execute()
+    entries = {}
+    for row in entries_resp.data:
+        entries[str(row['entry_date'])] = {
+            'completed': row['completed'],
+            'phase1': row['phase1'],
+            'phase2': row['phase2'],
+            'phase3': row['phase3'],
+        }
+
+    labels_resp = _sb.table('item_labels').select('*').execute()
+    labels = {}
+    for row in labels_resp.data:
+        labels.setdefault(row['phase_id'], {})[row['item_id']] = row['label']
+
+    return {'entries': entries, 'labels': labels}
 
 
 def save_data(data):
-    _kv.set(_KV_KEY, json.dumps(data))
+    for date_str, entry in data['entries'].items():
+        _sb.table('routine_entries').upsert({
+            'entry_date': date_str,
+            'completed': entry.get('completed', False),
+            'phase1': entry.get('phase1', {}),
+            'phase2': entry.get('phase2', {}),
+            'phase3': entry.get('phase3', {}),
+        }).execute()
+
+    for phase_id, items in data.get('labels', {}).items():
+        for item_id, label in items.items():
+            _sb.table('item_labels').upsert({
+                'phase_id': phase_id,
+                'item_id': item_id,
+                'label': label,
+            }).execute()
 
 
 # ── Routine definition ────────────────────────────────────────────────────────

@@ -1,13 +1,59 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-import json
 import os
+from supabase import create_client
+from dotenv import load_dotenv
 from datetime import date, timedelta
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-DATA_FILE = os.path.join(os.path.dirname(__file__), 'data', 'routines.json')
+# ── Data layer (Supabase) ─────────────────────────────────────────────────────
+
+_sb = create_client(os.environ['SUPABASE_URL'], os.environ['SUPABASE_KEY'])
+
+
+def load_data():
+    entries_resp = _sb.table('routine_entries').select('*').execute()
+    entries = {}
+    for row in entries_resp.data:
+        entries[str(row['entry_date'])] = {
+            'completed': row['completed'],
+            'phase1': row['phase1'],
+            'phase2': row['phase2'],
+            'phase3': row['phase3'],
+        }
+
+    labels_resp = _sb.table('item_labels').select('*').execute()
+    labels = {}
+    for row in labels_resp.data:
+        labels.setdefault(row['phase_id'], {})[row['item_id']] = row['label']
+
+    return {'entries': entries, 'labels': labels}
+
+
+def save_data(data):
+    for date_str, entry in data['entries'].items():
+        _sb.table('routine_entries').upsert({
+            'entry_date': date_str,
+            'completed': entry.get('completed', False),
+            'phase1': entry.get('phase1', {}),
+            'phase2': entry.get('phase2', {}),
+            'phase3': entry.get('phase3', {}),
+        }).execute()
+
+    for phase_id, items in data.get('labels', {}).items():
+        for item_id, label in items.items():
+            _sb.table('item_labels').upsert({
+                'phase_id': phase_id,
+                'item_id': item_id,
+                'label': label,
+            }).execute()
+
+
+# ── Routine definition ────────────────────────────────────────────────────────
 
 PHASES = [
     {
@@ -69,22 +115,7 @@ ACHIEVEMENT_NAMES = {
 }
 
 
-def load_data():
-    if not os.path.exists(DATA_FILE):
-        os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
-        return {'entries': {}}
-    try:
-        with open(DATA_FILE, 'r') as f:
-            return json.load(f)
-    except Exception:
-        return {'entries': {}}
-
-
-def save_data(data):
-    os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
-    with open(DATA_FILE, 'w') as f:
-        json.dump(data, f, indent=2)
-
+# ── Helpers ───────────────────────────────────────────────────────────────────
 
 def build_phases(data):
     """Return PHASES with any user-customized labels applied."""
@@ -136,6 +167,8 @@ def calculate_streak(entries):
 
     return streak
 
+
+# ── Routes ────────────────────────────────────────────────────────────────────
 
 @app.route('/api/state', methods=['GET'])
 def get_state():
