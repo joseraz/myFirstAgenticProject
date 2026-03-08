@@ -1,0 +1,11 @@
+frontend/node_modules/
+frontend/build/
+backend/.venv/
+backend/data/routines.json
+*.pyc
+__pycache__/
+.env
+.env.local
+.vercel
+.DS_Store
+.env*.local

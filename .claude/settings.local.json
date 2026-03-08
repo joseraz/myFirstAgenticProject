@@ -23,7 +23,13 @@
       "mcp__atlassian__search",
       "mcp__atlassian__editJiraIssue",
       "mcp__atlassian__addCommentToJiraIssue",
-      "mcp__atlassian__getJiraIssueTypeMetaWithFields"
+      "mcp__atlassian__getJiraIssueTypeMetaWithFields",
+      "Bash(chmod +x /Users/joserazguzman/Documents/myFirstAgenticProject/stop.sh)",
+      "Bash(chmod +x /Users/joserazguzman/Documents/myFirstAgenticProject/start.sh)",
+      "Bash(git add backend/app.py backend/data/routines.json frontend/src/App.css frontend/src/App.js frontend/src/components/Sidebar.js start.sh stop.sh)",
+      "Bash(git commit:*)",
+      "Bash(git push origin main)",
+      "Bash(source:*)"
     ]
   }
 }
