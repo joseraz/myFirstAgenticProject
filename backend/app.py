@@ -211,6 +211,40 @@ def rename_item():
     return jsonify({'ok': True, 'phase_id': phase_id, 'item_id': item_id, 'label': label})
 
 
+@app.route('/api/backfill-day', methods=['POST'])
+def backfill_day():
+    req = request.json
+    date_str = (req.get('date') or '').strip()
+
+    try:
+        entry_date = date.fromisoformat(date_str)
+    except ValueError:
+        return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD.'}), 400
+
+    if entry_date >= date.today():
+        return jsonify({'error': 'Cannot backfill today or a future date.'}), 400
+
+    data = load_data()
+
+    if date_str in data['entries']:
+        data['entries'][date_str]['completed'] = True
+    else:
+        data['entries'][date_str] = {'completed': True}
+
+    save_data(data)
+
+    streak = calculate_streak(data['entries'])
+    unlocked = [f for f in FIBONACCI if f <= streak]
+    next_milestone = next((f for f in FIBONACCI if f > streak), None)
+
+    return jsonify({
+        'ok': True,
+        'streak': streak,
+        'unlocked_achievements': unlocked,
+        'next_milestone': next_milestone,
+    })
+
+
 @app.route('/api/reset-today', methods=['POST'])
 def reset_today():
     """Dev utility: reset today's entry."""

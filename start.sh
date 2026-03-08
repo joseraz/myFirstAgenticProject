@@ -8,6 +8,11 @@ echo "  ▌ Bedtime Routine Tracker"
 echo "  ▌ Starting backend + frontend"
 echo ""
 
+# ── Clear stale processes ─────────────────────────────────────────────────────
+echo "  Clearing any stale processes on ports 5001 and 3000..."
+lsof -ti:5001 | xargs kill -9 2>/dev/null || true
+lsof -ti:3000 | xargs kill -9 2>/dev/null || true
+
 # ── Backend ───────────────────────────────────────────────────────────────────
 BACKEND="$ROOT/backend"
 

@@ -55,6 +55,19 @@ export default function App() {
     }
   }, [fetchState]);
 
+  const handleBackfill = useCallback(async (dateStr) => {
+    try {
+      await fetch(`${API}/backfill-day`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: dateStr }),
+      });
+      fetchState();
+    } catch (err) {
+      fetchState();
+    }
+  }, [fetchState]);
+
   const handleToggle = useCallback(async (phaseId, itemId) => {
     try {
       const res = await fetch(`${API}/toggle`, {
@@ -136,6 +149,7 @@ export default function App() {
           unlockedAchievements={unlocked_achievements}
           fibonacci={fibonacci}
           achievementNames={achievement_names}
+          onBackfill={handleBackfill}
         />
 
         {phases.map(phase => (
