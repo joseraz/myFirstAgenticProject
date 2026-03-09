@@ -1,5 +1,6 @@
-frontend/node_modules/
+node_modules/
 frontend/build/
+package-lock.json
 backend/.venv/
 backend/data/routines.json
 *.pyc

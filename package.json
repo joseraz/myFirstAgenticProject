@@ -1,0 +1,14 @@
+{
+  "name": "bedtime-routine-tracker-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "kill-port 3000 5001 && concurrently --names \"backend,frontend\" --prefix-colors \"blue,green\" \"node scripts/start-backend.js\" \"npm start --prefix frontend\"",
+    "stop": "kill-port 3000 5001",
+    "setup": "node scripts/setup-backend.js"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "kill-port": "^2.0.1"
+  }
+}
