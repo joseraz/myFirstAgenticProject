@@ -9,11 +9,23 @@ CORS(app)
 
 # ── Data layer (Supabase) ─────────────────────────────────────────────────────
 
-_sb = create_client(os.environ['SUPABASE_URL'], os.environ['SUPABASE_KEY'])
+_sb = None
+
+
+def get_client():
+    global _sb
+    if _sb is None:
+        url = os.environ.get('SUPABASE_URL')
+        key = os.environ.get('SUPABASE_KEY')
+        if not url or not key:
+            raise RuntimeError('SUPABASE_URL and SUPABASE_KEY env vars are not set')
+        _sb = create_client(url, key)
+    return _sb
 
 
 def load_data():
-    entries_resp = _sb.table('routine_entries').select('*').execute()
+    sb = get_client()
+    entries_resp = sb.table('routine_entries').select('*').execute()
     entries = {}
     for row in entries_resp.data:
         entries[str(row['entry_date'])] = {
@@ -23,7 +35,7 @@ def load_data():
             'phase3': row['phase3'],
         }
 
-    labels_resp = _sb.table('item_labels').select('*').execute()
+    labels_resp = sb.table('item_labels').select('*').execute()
     labels = {}
     for row in labels_resp.data:
         labels.setdefault(row['phase_id'], {})[row['item_id']] = row['label']
@@ -32,8 +44,9 @@ def load_data():
 
 
 def save_data(data):
+    sb = get_client()
     for date_str, entry in data['entries'].items():
-        _sb.table('routine_entries').upsert({
+        sb.table('routine_entries').upsert({
             'entry_date': date_str,
             'completed': entry.get('completed', False),
             'phase1': entry.get('phase1', {}),
@@ -43,7 +56,7 @@ def save_data(data):
 
     for phase_id, items in data.get('labels', {}).items():
         for item_id, label in items.items():
-            _sb.table('item_labels').upsert({
+            sb.table('item_labels').upsert({
                 'phase_id': phase_id,
                 'item_id': item_id,
                 'label': label,
