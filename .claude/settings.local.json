@@ -29,7 +29,28 @@
       "Bash(git add backend/app.py backend/data/routines.json frontend/src/App.css frontend/src/App.js frontend/src/components/Sidebar.js start.sh stop.sh)",
       "Bash(git commit:*)",
       "Bash(git push origin main)",
-      "Bash(source:*)"
+      "Bash(source:*)",
+      "Bash(ls /Users/joserazguzman/Documents/myFirstAgenticProject/*.env*)",
+      "Bash(ls /Users/joserazguzman/Documents/myFirstAgenticProject/.env*)",
+      "Bash(vercel env ls)",
+      "Bash(npx vercel env ls)",
+      "Bash(npx vercel storage ls)",
+      "Bash(npx vercel kv ls)",
+      "Bash(npx vercel --version)",
+      "Bash(npx vercel help)",
+      "Bash(npm install)",
+      "Bash(git rm -r --cached node_modules/)",
+      "Bash(git add .gitignore package.json scripts/)",
+      "Bash(git push)",
+      "Bash(git add api/index.py vercel.json)",
+      "Bash(git rm --cached .env.example)",
+      "Bash(npm install --prefix /Users/joserazguzman/Documents/myFirstAgenticProject/frontend)",
+      "Bash(pkill -f \"node scripts/start-backend\")",
+      "Bash(pkill -f \"react-scripts\")",
+      "Bash(lsof -ti:5001,3000)",
+      "Bash(xargs kill -9)",
+      "Bash(pkill -f \"node scripts\")",
+      "Bash(git rm --cached frontend/package-lock.json)"
     ]
   }
 }

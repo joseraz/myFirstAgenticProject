@@ -452,6 +452,45 @@
   box-shadow: inset 0 0 0 1px var(--black);
 }
 
+/* ── Drag Handle ────────────────────────── */
+
+.checklist-item__drag-handle {
+  margin-left: auto;
+  padding: 4px 0 4px 12px;
+  color: rgba(10, 10, 10, 0.15);
+  cursor: grab;
+  opacity: 0;
+  transition: opacity 0.15s;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  touch-action: none;
+}
+
+.checklist-item:hover .checklist-item__drag-handle {
+  opacity: 1;
+}
+
+.checklist-item__drag-handle:hover {
+  color: rgba(10, 10, 10, 0.5);
+}
+
+.checklist-item__drag-handle:active {
+  cursor: grabbing;
+}
+
+.checklist-item--dragging {
+  background: var(--white);
+  box-shadow: 0 4px 12px rgba(10, 10, 10, 0.15);
+  border: var(--border);
+}
+
+@media (hover: none) {
+  .checklist-item__drag-handle {
+    opacity: 0.3;
+  }
+}
+
 /* ── Completion Banner ───────────────────── */
 
 .completion-banner {

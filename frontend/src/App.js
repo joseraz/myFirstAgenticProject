@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove } from '@dnd-kit/sortable';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Phase from './components/Phase';
@@ -67,6 +69,102 @@ export default function App() {
       fetchState();
     }
   }, [fetchState]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
+  );
+
+  const persistOrder = useCallback(async (newPhases) => {
+    const order = newPhases.map(p => ({
+      phase_id: p.id,
+      items: p.items.map(i => i.id),
+    }));
+    try {
+      await fetch(`${API}/reorder`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order }),
+      });
+    } catch (err) {
+      fetchState(); // rollback on failure
+    }
+  }, [fetchState]);
+
+  const handleDragEnd = useCallback((event) => {
+    const { active, over } = event;
+    if (!active || !over) return;
+
+    const activeId = active.id;
+    const overId = over.id;
+
+    if (activeId === overId) return;
+
+    setState(prev => {
+      if (!prev) return prev;
+      const { phases, today } = prev;
+
+      // Find which phase the active item is in
+      let sourcePhaseIdx = -1;
+      let sourceItemIdx = -1;
+      for (let pi = 0; pi < phases.length; pi++) {
+        const idx = phases[pi].items.findIndex(i => i.id === activeId);
+        if (idx !== -1) {
+          sourcePhaseIdx = pi;
+          sourceItemIdx = idx;
+          break;
+        }
+      }
+      if (sourcePhaseIdx === -1) return prev;
+
+      // Determine destination: is `over` an item or a phase container?
+      let destPhaseIdx = -1;
+      let destItemIdx = -1;
+      for (let pi = 0; pi < phases.length; pi++) {
+        if (phases[pi].id === overId) {
+          // Dropped on an empty phase container
+          destPhaseIdx = pi;
+          destItemIdx = phases[pi].items.length; // append at end
+          break;
+        }
+        const idx = phases[pi].items.findIndex(i => i.id === overId);
+        if (idx !== -1) {
+          destPhaseIdx = pi;
+          destItemIdx = idx;
+          break;
+        }
+      }
+      if (destPhaseIdx === -1) return prev;
+
+      const newPhases = phases.map(p => ({ ...p, items: [...p.items] }));
+      let newToday = { ...today };
+
+      if (sourcePhaseIdx === destPhaseIdx) {
+        // Same phase: reorder
+        newPhases[sourcePhaseIdx].items = arrayMove(
+          newPhases[sourcePhaseIdx].items, sourceItemIdx, destItemIdx
+        );
+      } else {
+        // Cross-phase: remove from source, insert into dest
+        const [movedItem] = newPhases[sourcePhaseIdx].items.splice(sourceItemIdx, 1);
+        newPhases[destPhaseIdx].items.splice(destItemIdx, 0, movedItem);
+
+        // Migrate completion state
+        const sourcePhaseId = phases[sourcePhaseIdx].id;
+        const destPhaseId = phases[destPhaseIdx].id;
+        const wasChecked = (newToday[sourcePhaseId] || {})[activeId] || false;
+        newToday = { ...newToday };
+        newToday[sourcePhaseId] = { ...newToday[sourcePhaseId] };
+        delete newToday[sourcePhaseId][activeId];
+        newToday[destPhaseId] = { ...newToday[destPhaseId], [activeId]: wasChecked };
+      }
+
+      // Persist asynchronously
+      persistOrder(newPhases);
+
+      return { ...prev, phases: newPhases, today: newToday };
+    });
+  }, [persistOrder]);
 
   const handleToggle = useCallback(async (phaseId, itemId) => {
     try {
@@ -152,15 +250,17 @@ export default function App() {
           onBackfill={handleBackfill}
         />
 
-        {phases.map(phase => (
-          <Phase
-            key={phase.id}
-            phase={phase}
-            entries={today[phase.id] || {}}
-            onToggle={handleToggle}
-            onRename={handleRename}
-          />
-        ))}
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          {phases.map(phase => (
+            <Phase
+              key={phase.id}
+              phase={phase}
+              entries={today[phase.id] || {}}
+              onToggle={handleToggle}
+              onRename={handleRename}
+            />
+          ))}
+        </DndContext>
       </div>
 
       {showBanner && (

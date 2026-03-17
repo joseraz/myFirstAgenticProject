@@ -31,7 +31,12 @@ def load_data():
     for row in labels_resp.data:
         labels.setdefault(row['phase_id'], {})[row['item_id']] = row['label']
 
-    return {'entries': entries, 'labels': labels}
+    order_resp = _sb.table('item_order').select('*').order('position').execute()
+    item_order = {}
+    for row in order_resp.data:
+        item_order.setdefault(row['phase_id'], []).append(row['item_id'])
+
+    return {'entries': entries, 'labels': labels, 'item_order': item_order}
 
 
 def save_data(data):
@@ -118,27 +123,57 @@ ACHIEVEMENT_NAMES = {
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def build_phases(data):
-    """Return PHASES with any user-customized labels applied."""
+    """Return PHASES with any user-customized labels and ordering applied."""
     labels = data.get('labels', {})
-    result = []
+    item_order = data.get('item_order', {})
+
+    # Build a flat map of all items with labels applied
+    all_items = {}
     for phase in PHASES:
-        items = []
         for item in phase['items']:
             custom = labels.get(phase['id'], {}).get(item['id'])
-            items.append({'id': item['id'], 'label': custom if custom else item['label']})
+            all_items[item['id']] = {'id': item['id'], 'label': custom if custom else item['label']}
+
+    # If no custom order, return default
+    if not item_order:
+        result = []
+        for phase in PHASES:
+            items = [all_items[item['id']] for item in phase['items']]
+            result.append({**phase, 'items': items})
+        return result
+
+    # Apply custom ordering (supports cross-phase moves)
+    placed = set()
+    result = []
+    for phase in PHASES:
+        order = item_order.get(phase['id'], [])
+        items = []
+        for item_id in order:
+            if item_id in all_items:
+                items.append(all_items[item_id])
+                placed.add(item_id)
         result.append({**phase, 'items': items})
+
+    # Safety net: append any unplaced items to their default phase
+    for phase_idx, phase in enumerate(PHASES):
+        for item in phase['items']:
+            if item['id'] not in placed:
+                result[phase_idx]['items'].append(all_items[item['id']])
+
     return result
 
 
-def get_default_entry():
+def get_default_entry(phases=None):
+    phases = phases or PHASES
     entry = {'completed': False}
-    for phase in PHASES:
+    for phase in phases:
         entry[phase['id']] = {item['id']: False for item in phase['items']}
     return entry
 
 
-def is_all_completed(entry):
-    for phase in PHASES:
+def is_all_completed(entry, phases=None):
+    phases = phases or PHASES
+    for phase in phases:
         phase_data = entry.get(phase['id'], {})
         for item in phase['items']:
             if not phase_data.get(item['id'], False):
@@ -174,9 +209,10 @@ def calculate_streak(entries):
 def get_state():
     data = load_data()
     today = str(date.today())
+    phases = build_phases(data)
 
     if today not in data['entries']:
-        data['entries'][today] = get_default_entry()
+        data['entries'][today] = get_default_entry(phases)
         save_data(data)
 
     streak = calculate_streak(data['entries'])
@@ -185,7 +221,7 @@ def get_state():
 
     return jsonify({
         'today': data['entries'][today],
-        'phases': build_phases(data),
+        'phases': phases,
         'streak': streak,
         'fibonacci': FIBONACCI,
         'unlocked_achievements': unlocked,
@@ -203,15 +239,16 @@ def toggle_item():
 
     data = load_data()
     today = str(date.today())
+    phases = build_phases(data)
 
     if today not in data['entries']:
-        data['entries'][today] = get_default_entry()
+        data['entries'][today] = get_default_entry(phases)
 
     entry = data['entries'][today]
-    entry[phase_id][item_id] = not entry[phase_id][item_id]
+    entry.setdefault(phase_id, {})[item_id] = not entry.get(phase_id, {}).get(item_id, False)
 
     was_completed = entry.get('completed', False)
-    all_done = is_all_completed(entry)
+    all_done = is_all_completed(entry, phases)
     entry['completed'] = all_done
     just_completed = all_done and not was_completed
 
@@ -276,6 +313,54 @@ def backfill_day():
         'unlocked_achievements': unlocked,
         'next_milestone': next_milestone,
     })
+
+
+@app.route('/api/reorder', methods=['POST'])
+def reorder_items():
+    req = request.json
+    order = req.get('order', [])
+
+    # Save new ordering
+    # Delete existing rows (supabase requires a filter for delete)
+    _sb.table('item_order').delete().neq('id', '00000000-0000-0000-0000-000000000000').execute()
+
+    rows = []
+    for phase_entry in order:
+        phase_id = phase_entry['phase_id']
+        for position, item_id in enumerate(phase_entry['items']):
+            rows.append({
+                'phase_id': phase_id,
+                'item_id': item_id,
+                'position': position,
+            })
+
+    if rows:
+        _sb.table('item_order').insert(rows).execute()
+
+    # Migrate today's completion data to match new phase assignments
+    data = load_data()
+    today_str = str(date.today())
+    if today_str in data['entries']:
+        entry = data['entries'][today_str]
+        # Build a map of item_id -> current checked value across all phases
+        checked_map = {}
+        for phase in PHASES:
+            phase_data = entry.get(phase['id'], {})
+            for item in phase['items']:
+                checked_map[item['id']] = phase_data.get(item['id'], False)
+
+        # Rebuild phase entries from new ordering
+        for phase_entry in order:
+            phase_id = phase_entry['phase_id']
+            entry[phase_id] = {}
+            for item_id in phase_entry['items']:
+                entry[phase_id][item_id] = checked_map.get(item_id, False)
+
+        phases = build_phases(data)
+        entry['completed'] = is_all_completed(entry, phases)
+        save_data(data)
+
+    return jsonify({'ok': True})
 
 
 @app.route('/api/reset-today', methods=['POST'])
