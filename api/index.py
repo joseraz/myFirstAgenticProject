@@ -68,6 +68,17 @@ def save_data(data):
             }).execute()
 
 
+def save_today_entry(entry, today_date):
+    sb = get_client()
+    sb.table('routine_entries').upsert({
+        'entry_date': today_date,
+        'completed': entry.get('completed', False),
+        'phase1': entry.get('phase1', {}),
+        'phase2': entry.get('phase2', {}),
+        'phase3': entry.get('phase3', {}),
+    }).execute()
+
+
 # ── Routine definition ────────────────────────────────────────────────────────
 
 PHASES = [
@@ -261,7 +272,7 @@ def toggle_item():
     entry['completed'] = all_done
     just_completed = all_done and not was_completed
 
-    save_data(data)
+    save_today_entry(entry, today)
 
     streak = calculate_streak(data['entries'])
     unlocked = [f for f in FIBONACCI if f <= streak]

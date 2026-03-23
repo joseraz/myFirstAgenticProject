@@ -167,6 +167,22 @@ export default function App() {
   }, [persistOrder]);
 
   const handleToggle = useCallback(async (phaseId, itemId) => {
+    // Optimistically flip the item immediately
+    setState(prev => {
+      if (!prev) return prev;
+      const prevPhase = prev.today[phaseId] || {};
+      return {
+        ...prev,
+        today: {
+          ...prev.today,
+          [phaseId]: {
+            ...prevPhase,
+            [itemId]: !prevPhase[itemId],
+          },
+        },
+      };
+    });
+
     try {
       const res = await fetch(`${API}/toggle`, {
         method: 'POST',
@@ -176,6 +192,7 @@ export default function App() {
       if (!res.ok) throw new Error(`Server responded with ${res.status}`);
       const data = await res.json();
 
+      // Merge authoritative server data (streak, achievements, completed flag)
       setState(prev => {
         if (!prev) return prev;
 
@@ -202,8 +219,7 @@ export default function App() {
         setShowBanner(true);
       }
     } catch (err) {
-      // Silently fail on toggle; re-fetch to sync
-      fetchState();
+      fetchState(); // rollback on failure
     }
   }, [fetchState]);
 
