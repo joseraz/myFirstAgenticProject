@@ -16,9 +16,9 @@ def get_client():
     global _sb
     if _sb is None:
         url = os.environ.get('SUPABASE_URL')
-        key = os.environ.get('SUPABASE_KEY')
+        key = os.environ.get('SUPABASE_SERVICE_KEY')
         if not url or not key:
-            raise RuntimeError('SUPABASE_URL and SUPABASE_KEY env vars are not set')
+            raise RuntimeError('SUPABASE_URL and SUPABASE_SERVICE_KEY env vars are not set')
         _sb = create_client(url, key)
     return _sb
 

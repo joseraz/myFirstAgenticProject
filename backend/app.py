@@ -12,7 +12,7 @@ CORS(app)
 
 # ── Data layer (Supabase) ─────────────────────────────────────────────────────
 
-_sb = create_client(os.environ['SUPABASE_URL'], os.environ['SUPABASE_KEY'])
+_sb = create_client(os.environ['SUPABASE_URL'], os.environ['SUPABASE_SERVICE_KEY'])
 
 
 def load_data():
