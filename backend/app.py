@@ -36,7 +36,10 @@ def load_data():
     for row in order_resp.data:
         item_order.setdefault(row['phase_id'], []).append(row['item_id'])
 
-    return {'entries': entries, 'labels': labels, 'item_order': item_order}
+    removed_resp = _sb.table('removed_items').select('phase_id, item_id').execute()
+    removed = set((row['phase_id'], row['item_id']) for row in removed_resp.data)
+
+    return {'entries': entries, 'labels': labels, 'item_order': item_order, 'removed': removed}
 
 
 def save_data(data):
@@ -136,11 +139,14 @@ def build_phases(data):
     """Return PHASES with any user-customized labels and ordering applied."""
     labels = data.get('labels', {})
     item_order = data.get('item_order', {})
+    removed = data.get('removed', set())
 
-    # Build a flat map of all items with labels applied
+    # Build a flat map of all items with labels applied, skipping removed items
     all_items = {}
     for phase in PHASES:
         for item in phase['items']:
+            if (phase['id'], item['id']) in removed:
+                continue
             custom = labels.get(phase['id'], {}).get(item['id'])
             all_items[item['id']] = {'id': item['id'], 'label': custom if custom else item['label']}
 
@@ -148,7 +154,7 @@ def build_phases(data):
     if not item_order:
         result = []
         for phase in PHASES:
-            items = [all_items[item['id']] for item in phase['items']]
+            items = [all_items[item['id']] for item in phase['items'] if item['id'] in all_items]
             result.append({**phase, 'items': items})
         return result
 
@@ -167,7 +173,7 @@ def build_phases(data):
     # Safety net: append any unplaced items to their default phase
     for phase_idx, phase in enumerate(PHASES):
         for item in phase['items']:
-            if item['id'] not in placed:
+            if item['id'] not in placed and item['id'] in all_items:
                 result[phase_idx]['items'].append(all_items[item['id']])
 
     return result
@@ -289,6 +295,19 @@ def rename_item():
     save_data(data)
 
     return jsonify({'ok': True, 'phase_id': phase_id, 'item_id': item_id, 'label': label})
+
+
+@app.route('/api/remove-item', methods=['POST'])
+def remove_item():
+    req = request.json
+    phase_id = req['phase_id']
+    item_id = req['item_id']
+
+    _sb.table('removed_items').upsert({'phase_id': phase_id, 'item_id': item_id}).execute()
+    _sb.table('item_labels').delete().eq('phase_id', phase_id).eq('item_id', item_id).execute()
+    _sb.table('item_order').delete().eq('phase_id', phase_id).eq('item_id', item_id).execute()
+
+    return jsonify({'ok': True})
 
 
 @app.route('/api/backfill-day', methods=['POST'])

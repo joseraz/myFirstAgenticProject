@@ -491,6 +491,116 @@
   }
 }
 
+/* ── Delete Button ───────────────────────── */
+
+.checklist-item__delete {
+  opacity: 0;
+  pointer-events: none;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(10, 10, 10, 0.3);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.checklist-item:hover .checklist-item__delete {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.checklist-item__delete:hover {
+  color: var(--red);
+}
+
+/* ── Delete Confirm Modal ────────────────── */
+
+.delete-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.5);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-modal {
+  background: var(--white);
+  border: var(--border);
+  padding: 28px;
+  min-width: 280px;
+  max-width: 360px;
+  width: 90%;
+}
+
+.delete-modal__title {
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.delete-modal__body {
+  font-size: 13px;
+  color: rgba(10, 10, 10, 0.6);
+  margin-bottom: 8px;
+}
+
+.delete-modal__item-name {
+  font-size: 13px;
+  font-weight: 600;
+  border: var(--border-thin);
+  padding: 8px 12px;
+  margin-bottom: 20px;
+  background: rgba(10, 10, 10, 0.04);
+}
+
+.delete-modal__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.delete-modal__cancel {
+  flex: 1;
+  padding: 10px;
+  border: var(--border-thin);
+  background: var(--white);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.delete-modal__cancel:hover {
+  background: rgba(10, 10, 10, 0.05);
+}
+
+.delete-modal__confirm {
+  flex: 1;
+  padding: 10px;
+  border: var(--border);
+  background: var(--red);
+  color: var(--white);
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.delete-modal__confirm:hover {
+  opacity: 0.85;
+}
+
 /* ── Completion Banner ───────────────────── */
 
 .completion-banner {

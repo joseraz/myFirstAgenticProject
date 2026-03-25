@@ -5,6 +5,7 @@ import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Phase from './components/Phase';
 import CompletionBanner from './components/CompletionBanner';
+import DeleteConfirmModal from './components/DeleteConfirmModal';
 
 const API = '/api';
 
@@ -14,6 +15,7 @@ export default function App() {
   const [error, setError] = useState(null);
   const [showBanner, setShowBanner] = useState(false);
   const [newAchievement, setNewAchievement] = useState(null);
+  const [deleteModal, setDeleteModal] = useState(null); // null | {phaseId, itemId, label}
 
   const fetchState = useCallback(async () => {
     try {
@@ -69,6 +71,36 @@ export default function App() {
       fetchState();
     }
   }, [fetchState]);
+
+  const handleDeleteRequest = useCallback((phaseId, itemId, label) => {
+    setDeleteModal({ phaseId, itemId, label });
+  }, []);
+
+  const handleDeleteCancel = useCallback(() => {
+    setDeleteModal(null);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!deleteModal) return;
+    const { phaseId, itemId } = deleteModal;
+    setDeleteModal(null);
+    setState(prev => !prev ? prev : {
+      ...prev,
+      phases: prev.phases.map(p =>
+        p.id !== phaseId ? p : { ...p, items: p.items.filter(i => i.id !== itemId) }
+      ),
+    });
+    try {
+      const res = await fetch(`${API}/remove-item`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phase_id: phaseId, item_id: itemId }),
+      });
+      if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+    } catch (err) {
+      fetchState();
+    }
+  }, [deleteModal, fetchState]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -274,6 +306,7 @@ export default function App() {
               entries={today[phase.id] || {}}
               onToggle={handleToggle}
               onRename={handleRename}
+              onDeleteRequest={handleDeleteRequest}
             />
           ))}
         </DndContext>
@@ -281,6 +314,14 @@ export default function App() {
 
       {showBanner && (
         <CompletionBanner streak={streak} onDismiss={() => setShowBanner(false)} />
+      )}
+
+      {deleteModal && (
+        <DeleteConfirmModal
+          item={{ label: deleteModal.label }}
+          onConfirm={handleDeleteConfirm}
+          onCancel={handleDeleteCancel}
+        />
       )}
 
       {newAchievement && (

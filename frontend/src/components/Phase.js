@@ -3,7 +3,7 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 
-function SortableItem({ item, checked, phaseId, isEditing, editValue, onToggle, onStartEdit, onEditChange, onCommitEdit, onEditKeyDown }) {
+function SortableItem({ item, checked, phaseId, isEditing, editValue, onToggle, onStartEdit, onEditChange, onCommitEdit, onEditKeyDown, onDeleteRequest }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
     disabled: isEditing,
@@ -69,11 +69,32 @@ function SortableItem({ item, checked, phaseId, isEditing, editValue, onToggle, 
           <circle cx="8" cy="14" r="1.5"/>
         </svg>
       </div>
+      <button
+        className="checklist-item__delete"
+        aria-label="Delete item"
+        tabIndex={0}
+        onClick={e => { e.stopPropagation(); onDeleteRequest(phaseId, item.id, item.label); }}
+        onKeyDown={e => {
+          if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            e.stopPropagation();
+            onDeleteRequest(phaseId, item.id, item.label);
+          }
+        }}
+      >
+        <svg width="11" height="13" viewBox="0 0 11 13" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="1,3 10,3" />
+          <path d="M3.5,3 L3.5,1.5 L7.5,1.5 L7.5,3" />
+          <path d="M2,3 L2.75,11.5 L8.25,11.5 L9,3" />
+          <line x1="4.5" y1="6" x2="4.5" y2="9.5" />
+          <line x1="6.5" y1="6" x2="6.5" y2="9.5" />
+        </svg>
+      </button>
     </div>
   );
 }
 
-export default function Phase({ phase, entries, onToggle, onRename }) {
+export default function Phase({ phase, entries, onToggle, onRename, onDeleteRequest }) {
   const items = phase.items;
   const color = phase.color;
 
@@ -134,6 +155,7 @@ export default function Phase({ phase, entries, onToggle, onRename }) {
                 onEditChange={setEditValue}
                 onCommitEdit={commitEdit}
                 onEditKeyDown={handleEditKeyDown}
+                onDeleteRequest={onDeleteRequest}
               />
             );
           })}
