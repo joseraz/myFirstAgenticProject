@@ -793,3 +793,36 @@
   color: var(--white);
   letter-spacing: 0.02em;
 }
+
+/* ── Skeleton loading UI ───────────────────────────────────────────────────── */
+
+.skeleton-header {
+  height: 72px;
+  background: var(--black);
+  border-bottom: var(--border);
+  flex-shrink: 0;
+}
+
+.skeleton-sidebar {
+  width: 240px;
+  min-width: 240px;
+  border-right: var(--border);
+  flex-shrink: 0;
+}
+
+.skeleton-phase {
+  flex: 1;
+  border-right: var(--border);
+}
+
+.skeleton-sidebar,
+.skeleton-phase {
+  background: linear-gradient(90deg, #f0f0ee 25%, #e8e8e6 50%, #f0f0ee 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

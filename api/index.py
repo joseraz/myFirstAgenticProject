@@ -3,6 +3,7 @@ from flask_cors import CORS
 import os
 from supabase import create_client
 from datetime import date, timedelta
+from concurrent.futures import ThreadPoolExecutor
 
 app = Flask(__name__)
 CORS(app)
@@ -25,7 +26,27 @@ def get_client():
 
 def load_data():
     sb = get_client()
-    entries_resp = sb.table('routine_entries').select('*').execute()
+    cutoff = str(date.today() - timedelta(days=90))
+
+    def fetch_entries():
+        return sb.table('routine_entries').select('*').gte('entry_date', cutoff).execute()
+    def fetch_labels():
+        return sb.table('item_labels').select('*').execute()
+    def fetch_order():
+        return sb.table('item_order').select('*').order('position').execute()
+    def fetch_removed():
+        return sb.table('removed_items').select('phase_id, item_id').execute()
+
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        f_entries = executor.submit(fetch_entries)
+        f_labels  = executor.submit(fetch_labels)
+        f_order   = executor.submit(fetch_order)
+        f_removed = executor.submit(fetch_removed)
+        entries_resp = f_entries.result()
+        labels_resp  = f_labels.result()
+        order_resp   = f_order.result()
+        removed_resp = f_removed.result()
+
     entries = {}
     for row in entries_resp.data:
         entries[str(row['entry_date'])] = {
@@ -35,17 +56,14 @@ def load_data():
             'phase3': row['phase3'],
         }
 
-    labels_resp = sb.table('item_labels').select('*').execute()
     labels = {}
     for row in labels_resp.data:
         labels.setdefault(row['phase_id'], {})[row['item_id']] = row['label']
 
-    order_resp = sb.table('item_order').select('*').order('position').execute()
     item_order = {}
     for row in order_resp.data:
         item_order.setdefault(row['phase_id'], []).append(row['item_id'])
 
-    removed_resp = sb.table('removed_items').select('phase_id, item_id').execute()
     removed = set((row['phase_id'], row['item_id']) for row in removed_resp.data)
 
     return {'entries': entries, 'labels': labels, 'item_order': item_order, 'removed': removed}

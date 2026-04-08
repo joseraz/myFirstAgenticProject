@@ -8,10 +8,33 @@ import CompletionBanner from './components/CompletionBanner';
 import DeleteConfirmModal from './components/DeleteConfirmModal';
 
 const API = '/api';
+const CACHE_KEY = 'routine_state_v1';
+
+function readCache() {
+  try { return JSON.parse(localStorage.getItem(CACHE_KEY)); } catch { return null; }
+}
+function writeCache(data) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)); } catch {}
+}
+
+function SkeletonApp() {
+  return (
+    <div className="app">
+      <div className="skeleton-header" />
+      <div className="main">
+        <div className="skeleton-sidebar" />
+        <div className="skeleton-phase" />
+        <div className="skeleton-phase" />
+        <div className="skeleton-phase" />
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
-  const [state, setState] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const cached = readCache();
+  const [state, setState] = useState(cached);
+  const [loading, setLoading] = useState(!cached);
   const [error, setError] = useState(null);
   const [showBanner, setShowBanner] = useState(false);
   const [newAchievement, setNewAchievement] = useState(null);
@@ -22,13 +45,16 @@ export default function App() {
       const res = await fetch(`${API}/state`);
       if (!res.ok) throw new Error(`Server responded with ${res.status}`);
       const data = await res.json();
+      writeCache(data);
       setState(data);
       setLoading(false);
     } catch (err) {
-      setError(err.message);
+      if (!state) {
+        setError(err.message);
+      }
       setLoading(false);
     }
-  }, []);
+  }, [state]);
 
   useEffect(() => {
     fetchState();
@@ -256,14 +282,7 @@ export default function App() {
   }, [fetchState]);
 
   if (loading) {
-    return (
-      <div className="loading-screen">
-        <div className="loading-screen__bar">
-          <div className="loading-screen__bar-fill" />
-        </div>
-        <span className="loading-screen__text">Loading routine</span>
-      </div>
-    );
+    return <SkeletonApp />;
   }
 
   if (error) {
