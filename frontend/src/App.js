@@ -49,12 +49,13 @@ export default function App() {
       setState(data);
       setLoading(false);
     } catch (err) {
-      if (!state) {
-        setError(err.message);
-      }
+      setState(prev => {
+        if (!prev) setError(err.message);
+        return prev;
+      });
       setLoading(false);
     }
-  }, [state]);
+  }, []);
 
   useEffect(() => {
     fetchState();
