@@ -281,6 +281,67 @@ export default function App() {
     }
   }, [fetchState]);
 
+  const handleToggleAll = useCallback(async () => {
+    // Determine target state: if all items complete, set to false; else true
+    const allComplete = state && state.phases.every(phase =>
+      phase.items.every(item => (state.today[phase.id] || {})[item.id])
+    );
+    const targetState = !allComplete;
+
+    // Optimistically update all items
+    setState(prev => {
+      if (!prev) return prev;
+      const newToday = { ...prev.today };
+      prev.phases.forEach(phase => {
+        newToday[phase.id] = {};
+        phase.items.forEach(item => {
+          newToday[phase.id][item.id] = targetState;
+        });
+      });
+      newToday.completed = targetState;
+      return { ...prev, today: newToday };
+    });
+
+    try {
+      const res = await fetch(`${API}/toggle-all`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ completed: targetState }),
+      });
+      if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+      const data = await res.json();
+
+      // Merge authoritative server data
+      setState(prev => {
+        if (!prev) return prev;
+
+        // Detect new achievement unlock
+        const prevUnlocked = prev.unlocked_achievements || [];
+        const nextUnlocked = data.unlocked_achievements || [];
+        const gained = nextUnlocked.filter(a => !prevUnlocked.includes(a));
+        if (gained.length > 0) {
+          const name = prev.achievement_names[gained[gained.length - 1]];
+          setNewAchievement({ days: gained[gained.length - 1], name });
+          setTimeout(() => setNewAchievement(null), 3500);
+        }
+
+        return {
+          ...prev,
+          today: data.today,
+          streak: data.streak,
+          unlocked_achievements: data.unlocked_achievements,
+          next_milestone: data.next_milestone,
+        };
+      });
+
+      if (data.just_completed) {
+        setShowBanner(true);
+      }
+    } catch (err) {
+      fetchState(); // rollback on failure
+    }
+  }, [state, fetchState]);
+
   if (loading) {
     return <SkeletonApp />;
   }
@@ -305,7 +366,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <Header date={date} allCompleted={today.completed} />
+      <Header date={date} allCompleted={today.completed} onToggleAll={handleToggleAll} />
 
       <div className="main">
         <Sidebar

@@ -11,7 +11,7 @@ function formatDate(dateStr) {
   });
 }
 
-export default function Header({ date, allCompleted }) {
+export default function Header({ date, allCompleted, onToggleAll }) {
   return (
     <header className="header">
       <div className="header__accent-red" />
@@ -34,7 +34,14 @@ export default function Header({ date, allCompleted }) {
       </div>
       <div className="header__accent-right" />
       <div className="header__accent-gap" />
-      <div className="header__accent-yellow" />
+      <button
+        className={`header__mark-all-btn ${allCompleted ? 'header__mark-all-btn--done' : ''}`}
+        onClick={onToggleAll}
+        aria-label="Toggle all items"
+      >
+        <span className="header__mark-all-btn__check">✓</span>
+        <span className="header__mark-all-btn__label">Mark All</span>
+      </button>
     </header>
   );
 }

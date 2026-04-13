@@ -325,6 +325,45 @@ def remove_item():
     return jsonify({'ok': True})
 
 
+@app.route('/api/toggle-all', methods=['POST'])
+def toggle_all():
+    req = request.json
+    completed = req.get('completed', False)
+
+    data = load_data()
+    today = str(date.today())
+    phases = build_phases(data)
+
+    if today not in data['entries']:
+        data['entries'][today] = get_default_entry(phases)
+
+    entry = data['entries'][today]
+
+    # Set all items in all phases to the target state
+    for phase in phases:
+        entry.setdefault(phase['id'], {})
+        for item in phase['items']:
+            entry[phase['id']][item['id']] = completed
+
+    was_completed = entry.get('completed', False)
+    entry['completed'] = completed
+    just_completed = completed and not was_completed
+
+    save_today_entry(entry, today)
+
+    streak = calculate_streak(data['entries'])
+    unlocked = [f for f in FIBONACCI if f <= streak]
+    next_milestone = next((f for f in FIBONACCI if f > streak), None)
+
+    return jsonify({
+        'today': entry,
+        'streak': streak,
+        'unlocked_achievements': unlocked,
+        'next_milestone': next_milestone,
+        'just_completed': just_completed,
+    })
+
+
 @app.route('/api/backfill-day', methods=['POST'])
 def backfill_day():
     req = request.json
