@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "React Frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["start", "--prefix", "frontend"],
+      "port": 3000
+    },
+    {
+      "name": "Flask Backend",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["scripts/start-backend.js"],
+      "port": 5001
+    }
+  ]
+}

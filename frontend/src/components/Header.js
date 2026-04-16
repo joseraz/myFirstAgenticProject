@@ -1,4 +1,5 @@
 import React from 'react';
+import StreakCalendar from './StreakCalendar';
 
 function formatDate(dateStr) {
   if (!dateStr) return '';
@@ -19,6 +20,7 @@ export default function Header({ date, allCompleted, onToggleAll }) {
       <div className="header__title-area">
         <span className="header__title">Bedtime Routine</span>
         <span className="header__date">{formatDate(date)}</span>
+        <StreakCalendar compact />
         {allCompleted && (
           <span style={{
             fontSize: '10px',

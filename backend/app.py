@@ -364,6 +364,18 @@ def toggle_all():
     })
 
 
+@app.route('/api/history', methods=['GET'])
+def get_history():
+    sb = get_client()
+    cutoff = str(date.today() - timedelta(days=364))
+    result = sb.table('routine_entries') \
+        .select('entry_date, completed') \
+        .gte('entry_date', cutoff) \
+        .execute()
+    entries = {row['entry_date']: row['completed'] for row in result.data}
+    return jsonify({'history': entries})
+
+
 @app.route('/api/backfill-day', methods=['POST'])
 def backfill_day():
     req = request.json
